@@ -1,0 +1,67 @@
+---
+title: "Impacts of Storms on Publich Health and Economy in USA"
+author: "Baohua Wu"
+date: "06/10/2014"
+output: html_document
+---
+
+# Synopsis
+
+This report mainly studied how storms impacted both public health and economic problems for communities and municipalities.
+The study found, which types of events are the most harmful with respect to population health, which types of events have 
+the greatest economic consequences. This study results may help to prioritize resources for different types of events 
+in preparing for severe weather events.
+
+
+## Data Processing
+```{r, echo=TRUE, cache=TRUE}
+wbh<-read.csv(bzfile("repdata-data-StormData.csv.bz2"))
+str(wbh)
+
+storm<-wbh[,c("EVTYPE", 'FATALITIES', 'INJURIES',  'PROPDMG', 'PROPDMGEXP', 'CROPDMG', 'CROPDMGEXP')]
+#storm$health<-3*storm$FATALITIES+storm$INJURIES
+#storm$dmg<-storm$PROPDMG+storm$CROPDMG
+str(storm)
+head(storm) 
+#table(storm$EVTYPE)
+
+
+fata<-tapply(storm$FATALITIES, storm$EVTYPE,sum, na.rm=TRUE)
+Data<-fata[order(-fata)][1:10]
+H1<-as.data.frame(cbind(Data, Type="Fatalities"))
+
+injury<-tapply(storm$INJURIES, storm$EVTYPE,sum, na.rm=TRUE)
+Data<-injury[order(-injury)][1:10]
+H2<-as.data.frame(cbind(Data, Type="Injuries"))
+
+Health<-rbind(H1, H2)
+Health$name=names(Health$Data)
+
+prop<-tapply(storm$PROPDMG, storm$EVTYPE,sum, na.rm=TRUE)
+Data<-prop[order(-prop)][1:10]
+D1<-as.data.frame(cbind(Data, Type="Properties Damage"))
+crop<-tapply(storm$CROPDMG, storm$EVTYPE,sum, na.rm=TRUE)
+Data<-crop[order(-crop)][1:10]
+D2<-as.data.frame(cbind(Data, Type="Crops Damage"))
+Damage<-rbind(D1, D2)
+
+require(lattice)
+
+barchart(Health$Data,groups=Health$Type, horiz=TRUE, ylab="Total Number", auto.key=list(space="bottom"))
+
+
+barchart(as.numeric(levels(Data))[Data]~name,groups=Type, data=Health, horiz=FALSE, ylab="Total Number", auto.key=list(space="bottom"))
+
+barchart(as.numeric(levels(Data))[Data]~name | Type, data = Health,
+         groups = Type, layout = c(1,2), origin = 0,
+         ylab = "Total Numbers",
+         scales = list(x = list(abbreviate = TRUE)))
+
+barchart(as.numeric(levels(Data))[Data]~name |Type, Health, layout = c(2,1), horiz=TRUE,xlab="Interval", ylab="Number of Steps",stack = TRUE,
+  panel=function(x,y){
+  panel.barchart( x,y,lty=1, type="l")
+})
+```
+ 
+
+## Results

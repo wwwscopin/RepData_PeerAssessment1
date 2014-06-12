@@ -1,0 +1,69 @@
+---
+title: "Impacts of Storms on Public Health and Economy in USA"
+author: "Baohua Wu"
+date: "06/10/2014"
+output: html_document
+---
+
+# Synopsis
+
+This report mainly studied how storms impacted both public health and economic problems for communities and municipalities.
+The study found, Tornado, Excessive Heat, TSTM WIND are  the most harmful with respect to population health, Tornado , FlASH FLOOD, TSTM WIND etc.  have the greatest economic consequences. This study results may help to prioritize resources for different types of events in preparing for severe weather events.
+
+
+## Data Processing
+After reading in the origin data, a new data set called "storm" was subset to keep only those usufull variables for later analysis.
+
+```{r, echo=TRUE, cache=TRUE}
+wbh<-read.csv(bzfile("repdata-data-StormData.csv.bz2"))
+storm<-wbh[,c("EVTYPE", 'FATALITIES', 'INJURIES',  'PROPDMG', 'CROPDMG')]
+str(storm)
+head(storm) 
+#table(storm$EVTYPE)
+```
+
+
+### Get total number of fatalities/injuries by each type of storm event, and make the barcharts for comparisions:
+
+```{r,echo=TRUE}
+require(lattice)
+fata<-tapply(storm$FATALITIES, storm$EVTYPE,sum, na.rm=TRUE)
+Data<-fata[order(-fata)][1:10]
+barchart(Data, xlab="Total Number", main="Total Number of Fatalities")
+
+injury<-tapply(storm$INJURIES, storm$EVTYPE,sum, na.rm=TRUE)
+Data<-injury[order(-injury)][1:10]
+barchart(Data, xlab="Total Number", main="Total Number of Injuries")
+```
+
+### Get top ten damages by each type of storm event for properties damages:
+
+```{r,echo=TRUE}
+prop<-tapply(storm$PROPDMG, storm$EVTYPE,sum, na.rm=TRUE)
+Num1<-prop[order(-prop)][1:10]
+Num1
+```
+
+### Get top ten damages by each type of storm event for crop damages:
+
+```{r,echo=TRUE}
+crop<-tapply(storm$CROPDMG, storm$EVTYPE,sum, na.rm=TRUE)
+Num2<-crop[order(-crop)][1:10]
+Num2
+```
+
+### Get total damages by each type of storm event, and make the barchart for comparisions
+```{r,echo=TRUE}
+tot<-tapply(storm$PROPDMG+storm$CROPDMG, storm$EVTYPE,sum, na.rm=TRUE)
+Tot=tot[order(-tot)][1:10]
+
+barchart(Tot, xlab="Total Damages(Properties + Crops)", main="Total Damage(Properties + Crops)")
+
+```
+ 
+## Results
+
+In this study, the top ten types of storms which cause the most fatalities and injuries,
+and the top ten types of storms that brought most properties and crops damage were given.
+Generally speaking, TORNADO, FLOOD, TSTM WIND etc. contribute the most in both situations.
+
